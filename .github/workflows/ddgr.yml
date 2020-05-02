@@ -1,0 +1,46 @@
+name: publish new ddgr release to PyPI
+on:
+  push:
+  schedule:
+    - cron: "0 */6 * * *"
+jobs:
+  default:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+      - name: Check new release
+        run: |
+          ddgr/check
+        env:
+          TEST_PYPI: true
+      - name: Prepare distributions
+        if: ${{ env.UPDATE_DUE == 'true' }}
+        run: |
+          set -x
+
+          pip install -U pip wheel
+          git clone https://github.com/jarun/ddgr.git ddgr-repo
+          cd ddgr-repo
+
+          #python3 setup.py sdist
+          #pip install dist/ddgr*.tar.gz
+          #ddgr --noprompt googler
+          #pip uninstall -y ddgr
+
+          python3 setup.py bdist_wheel
+          pip install dist/ddgr*.whl
+          ddgr --noprompt googler
+          pip uninstall -y ddgr
+      - name: Publish to PyPI
+        if: ${{ env.UPDATE_DUE == 'true' }}
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          repository_url: https://test.pypi.org/legacy/
+          user: zmwangx-maint
+          password: ${{ secrets.test_pypi_password }}
+          packages_dir: ddgr-repo/dist/
