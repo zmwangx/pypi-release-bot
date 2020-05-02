@@ -16,8 +16,6 @@ jobs:
       - name: Check new release
         run: |
           ddgr/check
-        env:
-          TEST_PYPI: true
       - name: Prepare distributions
         if: ${{ env.UPDATE_DUE == 'true' }}
         run: |
@@ -40,7 +38,5 @@ jobs:
         if: ${{ env.UPDATE_DUE == 'true' }}
         uses: pypa/gh-action-pypi-publish@master
         with:
-          repository_url: https://test.pypi.org/legacy/
-          user: zmwangx-maint
-          password: ${{ secrets.test_pypi_password }}
+          password: ${{ secrets.pypi_api_token_ddgr }}
           packages_dir: ddgr-repo/dist/
